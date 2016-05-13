@@ -401,21 +401,38 @@ model_attrib=lm(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_su
 summary(model_attrib)
 ```
 
-Minimal Linear Regression model (all non-empty attributes, removing non-correlated and colinear attributes)
+
+Remove factor levels not correlated:
+
+```{r}
+Inv_final$IMFGNO[!(Inv_final$IMFGNO %in% c("4772", "4773", "4777", "9361", "9739"))]<-""
+Inv_final$IFINLN[!(Inv_final$IFINLN %in% c("OTHER"))]<-""
+Inv_final$ISTYPE[!(Inv_final$ISTYPE %in% c("05", "GW"))]<-""
+Inv_final$ISEASN[!(Inv_final$ISEASN %in% c("HNK", "XMS"))]<-""
+Inv_final$IATRB3[!(Inv_final$IATRB3 %in% c("ID", "JP", "SL", "TW"))]<-""
+```
+
+
+Minimal Linear Regression model (all non-empty attributes, removing non-correlated and colinear attributes, and non-correlated words)
   Attributes removed:
-    ISDEPT,
     ITKTTR,
-    ILBLTR,
-    ISTDPK,
     IWGHT,
     IMDATE,
-    ILEAD.
-  R-squared: 0.4574
+    ILEAD,
+    IMXSTK,
+    IRPLCD,
+    IPRCCH,
+    IPRCST,
+    ICORGP.
+  Words kept:
+    Black, Red, Ribbon, Silver, Tree
+  R-squared: 0.3724
 
 ```{r, echo=FALSE}
-model_minimal=lm(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+IFINLN+ISTYPE+IMINPK+IMXSTK+IDSPLY+IRPLCD+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IPRCCH+IPRCST+ICORGP+IMCRDT+w_babi+w_bag+w_bdi+w_bird+w_birthday+w_black+w_blue+w_box+w_bracelet+w_butterfli+w_cake+w_candl+w_card+w_cardx+w_conv+w_crystal+w_dog+w_dress+w_earring+w_floral+w_flower+w_gem+w_general+w_girl+w_glass+w_glitter+w_gold+w_handmad+w_happi+w_heart+w_love+w_med+w_mini+w_mom+w_neck+w_necklac+w_note+w_pink+w_print+w_red+w_ribbon+w_set+w_silver+w_soap+w_thank+w_tree+w_vintag+w_wed+w_white+w_xbc, data=Inv_final)
+model_minimal=lm(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ISDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+ILBLTR+IFINLN+IMINPK+ISTDPK+IDSPLY+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IMCRDT+w_black+w_red+w_ribbon+w_silver+w_tree, data=Inv_final)
 summary(model_minimal)
 ```
+
 
 #Prepare data for model evaluation
 
@@ -457,7 +474,7 @@ id <- which(!(Inv_final_test$IFINLN %in% levels(Inv_final_train$IFINLN)))
 #Inv_final_test$IFINLN[id]<-""
 
 id <- which(!(Inv_final_test$ISTYPE %in% levels(Inv_final_train$ISTYPE)))
-Inv_final_test$ISTYPE[id]<-"01"
+#Inv_final_test$ISTYPE[id]<-"01"
 
 id <- which(!(Inv_final_test$ICORGP %in% levels(Inv_final_train$ICORGP)))
 Inv_final_test$ICORGP[id]<-""
@@ -484,7 +501,7 @@ Inv_final_test$IPRCCH<-Inv_final_test$IPRCCH[,drop=TRUE]
 Inv_final_test$IPRCST<-Inv_final_test$IPRCST[,drop=TRUE]
 
 for (p in names(Inv_final_test)) { 
-     if (class(Inv_final_train[[p]]) == "factor") { 
+     if (class(Inv_final_train[[p]]) == "factor" & p!="ISTYPE") { 
          levels(Inv_final_test[[p]]) <- levels(Inv_final_train[[p]]) 
      } 
 }
@@ -505,8 +522,8 @@ message('MAE: ', MAE.baseline)
 Create minimal Linear Regression model on Training Data
 
 ```{r, echo=FALSE}
-model_lr=lm(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+IFINLN+ISTYPE+IMINPK+IMXSTK+IDSPLY+IRPLCD+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IPRCCH+IPRCST+ICORGP+IMCRDT+w_babi+w_bag+w_bdi+w_bird+w_birthday+w_black+w_blue+w_box+w_bracelet+w_butterfli+w_cake+w_candl+w_card+w_cardx+w_conv+w_crystal+w_dog+w_dress+w_earring+w_floral+w_flower+w_gem+w_general+w_girl+w_glass+w_glitter+w_gold+w_handmad+w_happi+w_heart+w_love+w_med+w_mini+w_mom+w_neck+w_necklac+w_note+w_pink+w_print+w_red+w_ribbon+w_set+w_silver+w_soap+w_thank+w_tree+w_vintag+w_wed+w_white+w_xbc, data=Inv_final_train)
-summary(model_minimal)
+model_lr=lm(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ISDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+ILBLTR+IFINLN+IMINPK+ISTDPK+IDSPLY+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IMCRDT+w_black+w_red+w_ribbon+w_silver+w_tree, data=Inv_final_train)
+summary(model_lr)
 ```
 
 Calculate errors on LR model
@@ -522,7 +539,7 @@ message('MAE: ', MAE.lr)
 Create Decision Tree model
 
 ```{r, echo=FALSE}
-model_dt=rpart(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+IFINLN+ISTYPE+IMINPK+IMXSTK+IDSPLY+IRPLCD+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IPRCCH+IPRCST+ICORGP+IMCRDT+w_babi+w_bag+w_bdi+w_bird+w_birthday+w_black+w_blue+w_box+w_bracelet+w_butterfli+w_cake+w_candl+w_card+w_cardx+w_conv+w_crystal+w_dog+w_dress+w_earring+w_floral+w_flower+w_gem+w_general+w_girl+w_glass+w_glitter+w_gold+w_handmad+w_happi+w_heart+w_love+w_med+w_mini+w_mom+w_neck+w_necklac+w_note+w_pink+w_print+w_red+w_ribbon+w_set+w_silver+w_soap+w_thank+w_tree+w_vintag+w_wed+w_white+w_xbc, data=Inv_final_train)
+model_dt=rpart(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ISDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+ILBLTR+IFINLN+IMINPK+ISTDPK+IDSPLY+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IMCRDT+w_black+w_red+w_ribbon+w_silver+w_tree, data=Inv_final_train)
 summary(model_dt)
 ```
 
@@ -536,7 +553,7 @@ MAE.dt<-mean(abs(test.pred.sales.dt-Inv_final_test$IBWK01_sum))
 message('MAE: ', MAE.dt)
 ```
 
-Prune resulting model (had no effect)
+Prune resulting model
 
 ```{r, echo=FALSE}
 printcp(model_dt)
@@ -557,7 +574,7 @@ message('MAE: ', MAE.dt.pruned)
 Create Random Forest model
 
 ```{r}
-model_rf=randomForest(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ICLAS+ISCLAS+BYRNUM+ITKTN+IFINLN+ISTYPE+IMINPK+IMXSTK+IDSPLY+IRPLCD+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IPRCCH+IPRCST+ICORGP+IMCRDT+w_babi+w_bag+w_bdi+w_bird+w_birthday+w_black+w_blue+w_box+w_bracelet+w_butterfli+w_cake+w_candl+w_card+w_cardx+w_conv+w_crystal+w_dog+w_dress+w_earring+w_floral+w_flower+w_gem+w_general+w_girl+w_glass+w_glitter+w_gold+w_handmad+w_happi+w_heart+w_love+w_med+w_mini+w_mom+w_neck+w_necklac+w_note+w_pink+w_print+w_red+w_ribbon+w_set+w_silver+w_soap+w_thank+w_tree+w_vintag+w_wed+w_white+w_xbc, data=Inv_final_train,importance=TRUE, ntree=1000)
+model_rf=randomForest(IBWK01_sum~IBHAND_sum+IBWK02_sum+IBWK03_sum+IBWK04_sum+IBWK05_sum+IBWK06_sum+IBWK07_sum+IBWK08_sum+ASNUM+IDEPT+ISDEPT+ICLAS+ISCLAS+IMFGNO+BYRNUM+ITKTN+ILBLTR+IFINLN+IMINPK+ISTDPK+IDSPLY+IVPLHI+IDISTM+ISEASN+INLRTL+IATRB3+IMCRDT+w_black+w_red+w_ribbon+w_silver+w_tree, data=Inv_final_train,importance=TRUE, ntree=1000)
 #summary(model_rf)
 
 message('Minimum MSE tree count:', which.min(model_rf$mse))
@@ -598,17 +615,21 @@ predictions<-data.frame(Actual=Inv_final_test$IBWK01_sum,
 head(predictions)
 all.predictions <- gather(predictions,key = model,value = predictions,2:6)
 
-message('Cut off at 10')
-
 ggplot(data = all.predictions,aes(x = Actual, y = predictions)) + 
   geom_point(colour = "blue") + 
   geom_abline(intercept = 0, slope = 1, colour = "red") +
   geom_vline(xintercept = 23, colour = "green", linetype = "dashed") +
   facet_wrap(~ model,ncol = 2) + 
-  coord_cartesian(xlim = c(0,10),ylim = c(0,10)) +
+  coord_cartesian(xlim = c(0,15),ylim = c(0,15)) +
   ggtitle("Predicted vs. Actual, by model")
+
+message('Sales Units range is cut off at 15')
 ```
 
 #Summary
 
-From RMSE and MAE measurements, it appears that the Decision Tree model is the best.  Looking at the graphs of Predicted vs. Actual, Random Forest looks to push closer to ideal.  More input is needed to get a better prediction of R-squared of 0.46.
+From RMSE and MAE measurements, it appears that the Random Forest model is the best, which is to be expected.  Looking at the graphs of Predicted vs. Actual, Random Forest looks to push closer to ideal.  More input is needed to get a better prediction of R-squared of 0.37.
+
+However, before removing all of the non-correlated attributes and description words, the R-squared was 0.46, and the best RMSE was higher (~1.80) than this minimal model.
+
+It is difficult guaging which of the independent variables are the most important, as the Linear Regression lowest t valued variables don't correspond to the lowest Random Forest MSE valued variables.  Perhaps developing the RF model on the full training set and then comparing to the LR model developed on the full training set.  That would give a better representation of the full story.
