@@ -18,8 +18,6 @@ The following is the R code and results from this exercise.
 #Set up R environment
 
 ```{r, message=FALSE}
-#Needed<-c("dplyr", "tm", "wordcloud", "SnowballC", "corrplot", "rpart", "rattle", "randomForest", "tidyr", "ggplot2")
-#install.packages(Needed, dependencies=TRUE)
 library(tm)
 library(dplyr)
 library(wordcloud)
@@ -30,7 +28,7 @@ library(rattle)
 library(randomForest)
 library(tidyr)
 library(ggplot2)
-setwd("C:/Users/Christopher Himmel/Dropbox/Deep Learning/SlideRule Foundations/Capstone")
+setwd("C:/Users/Christopher/Dropbox/Deep Learning/Projects/Sales-Prediction")
 ```
 
 #Upload data pulled out of MMS
@@ -38,7 +36,7 @@ setwd("C:/Users/Christopher Himmel/Dropbox/Deep Learning/SlideRule Foundations/C
 Load and view Item Master (INVMST):
 
 ```{r}
-Item_Master = read.csv("INVMST - Item Master.csv")
+Item_Master = read.csv("data/INVMST - Item Master.csv")
 #View(Item_Master)
 #summary(Item_Master)
 ```
@@ -46,7 +44,7 @@ Item_Master = read.csv("INVMST - Item Master.csv")
 Load and view Chain Level Inventory Balance file (INVCBL):
 
 ```{r}
-Inv_Bal_Chain = read.csv("INVCBL - Chain Level Inventory Balance Data.csv")
+Inv_Bal_Chain = read.csv("data/INVCBL - Chain Level Inventory Balance Data.csv")
 #View(Inv_Bal_Chain)
 #summary(Inv_Bal_Chain)
 ```
@@ -54,7 +52,7 @@ Inv_Bal_Chain = read.csv("INVCBL - Chain Level Inventory Balance Data.csv")
 Load and view Store Level Inventory Balance file, filtered for Niquea'D stores (INVBAL):
 
 ```{r}
-Inv_Bal_Store = read.csv("INVBAL - Store Level Inventory Balance Data - Niquea'D.csv")
+Inv_Bal_Store = read.csv("data/INVBAL - Store Level Inventory Balance Data - Niquea'D.csv")
 #View(Inv_Bal_Store)
 #summary(Inv_Bal_Store)
 ```
@@ -175,193 +173,17 @@ Inv_final<-merge(Inv_final,dtm_dataset_topdf,by="rownumber")
 ```
 
 #Test each attribute for significant amount of data
+(done in Preprocessing.rmd)
 
-Visualize each column of data:
+#Clean up certain missing values
 
 ```{r}
-# IDESCR - factors of descriptions
-# ICHECK - all Zeros
-barplot(table(Inv_final$ICHECK),main="ICHECK")
-# IDSCCD - minimal values
-barplot(table(Inv_final$IDSCCD),main="IDSCCD")
-# ISORT - factors of descriptions
-# ISTYLN - all NA's
-# ASNUM - distributed values
-barplot(table(Inv_final$ASNUM),main="ASNUM")
-# IVNDPN - empty
-barplot(table(Inv_final$IVNDPN),main="IVNDPN")
-# IMFGR - empty
-barplot(table(Inv_final$IMFGR),main="IMFGR")
-# IMFGNO - some values
-barplot(table(Inv_final$IMFGNO),main="IMFGNO")
-# IDEPT - use
-barplot(table(Inv_final$IDEPT),main="IDEPT")
-# ISDEPT - use
-barplot(table(Inv_final$ISDEPT),main="ISDEPT")
-# ICLAS - use
-barplot(table(Inv_final$ICLAS),main="ICLAS")
-# ISCLAS - use
-barplot(table(Inv_final$ISCLAS),main="ISCLAS")
-# BYRNUM - convert NA's to 0
 Inv_final$BYRNUM[is.na(Inv_final$BYRNUM)]<-0
-barplot(table(Inv_final$BYRNUM),main="BYRNUM")
-# IASPAC - empty
-barplot(table(Inv_final$IASPAC),main="IASPAC")
-# IADVYN - empty
-barplot(table(Inv_final$IADVYN),main="IADVYN")
-# IBUYCD - mostly empty
-barplot(table(Inv_final$IBUYCD),main="IBUYCD")
-# ISET - empty
-barplot(table(Inv_final$ISET),main="ISET")
-# IWARNT - mostly empty
-barplot(table(Inv_final$IWARNT),main="IWARNT")
-# IPRMPT - mostly empty
-barplot(table(Inv_final$IPRMPT),main="IPRMPT")
-# IPRVNT - mostly empty
-barplot(table(Inv_final$IPRVNT),main="IPRVNT")
-# ITKTTR - convert NA's to 0
 Inv_final$ITKTTR[is.na(Inv_final$ITKTTR)]<-0
-barplot(table(Inv_final$ITKTTR),main="ITKTTR")
-# ITKTTA - mostly empty
-barplot(table(Inv_final$ITKTTA),main="ITKTTA")
-# ITKTN
-barplot(table(Inv_final$ITKTN),main="ITKTN")
-# ILBLTR - convert NA's to 0
 Inv_final$ILBLTR[is.na(Inv_final$ILBLTR)]<-0
-barplot(table(Inv_final$ILBLTR),main="ILBLTR")
-# ILBLTA - empty
-barplot(table(Inv_final$ILBLTA),main="ILBLTA")
-# IFINLN
-barplot(table(Inv_final$IFINLN),main="IFINLN")
-# IPROFL - mostly empty
-barplot(table(Inv_final$IPROFL),main="IPROFL")
-# IMODUL - mostly empty
-barplot(table(Inv_final$IMODUL),main="IMODUL")
-# ISTYPE
-barplot(table(Inv_final$ISTYPE),main="ISTYPE")
-# ISCOLR - mostly empty
-barplot(table(Inv_final$ISCOLR),main="ISCOLR")
-# ISSIZE - mostly empty
-barplot(table(Inv_final$ISSIZE),main="ISSIZE")
-# IHAZCD - all NA's
-# MCHNUM - all NA's
-# ISUBST - empty
-barplot(table(Inv_final$ISUBST),main="ISUBST")
-# ICORE - empty
-barplot(table(Inv_final$ICORE),main="ICORE")
-# IREPL - empty
-barplot(table(Inv_final$IREPL),main="IREPL")
-# ISLUM - mostly empty
-barplot(table(Inv_final$ISLUM),main="ISLUM")
-# IUMCV2 - all 1's
-barplot(table(Inv_final$IUMCV2),main="IUMCV2")
-# IBYUM - all EA's
-barplot(table(Inv_final$IBYUM),main="IBYUM")
-# IMINPK
-barplot(table(Inv_final$IMINPK),main="IMINPK")
-# ISTDPK
-barplot(table(Inv_final$ISTDPK),main="ISTDPK")
-# IHLDOR - mostly empty
-barplot(table(Inv_final$IHLDOR),main="IHLDOR")
-# IMOQTY - mostly empty
-barplot(table(Inv_final$IMOQTY),main="IMOQTY")
-# IMNSTK - empty
-barplot(table(Inv_final$IMNSTK),main="IMNSTK")
-# IMXSTK
-barplot(table(Inv_final$IMXSTK),main="IMXSTK")
-# IMDSTK - empty
-barplot(table(Inv_final$IMDSTK),main="IMDSTK")
-# IDSPLY
-barplot(table(Inv_final$IDSPLY),main="IDSPLY")
-# IOMULT - mostly empty
-barplot(table(Inv_final$IOMULT),main="IOMULT")
-# IRPLCD - convert NA's to 0
 Inv_final$IRPLCD[is.na(Inv_final$IRPLCD)]<-0
-barplot(table(Inv_final$IRPLCD),main="IRPLCD")
-# IMFPRC - empty
-barplot(table(Inv_final$IMFPRC),main="IMFPRC")
-# IWGHT - there is one outlier that throws the significance off
-barplot(table(Inv_final$IWGHT),main="IWGHT")
 Inv_final$IWGHT[Inv_final$IWGHT==3001.4]=0
-# ICUBE - investigate taking the log(ICUBE)
-barplot(table(Inv_final$ICUBE),main="ICUBE")
-# IDLGTH - investigate taking the log(ICUBE)
-barplot(table(Inv_final$IDLGTH),main="IDLGTH")
-# IDWDTH - investigate taking the log(ICUBE)
-barplot(table(Inv_final$IDWDTH),main="IDWDTH")
-# IDHGHT - investigate taking the log(ICUBE)
-barplot(table(Inv_final$IDHGHT),main="IDHGHT")
-# IMDATE
-barplot(table(Inv_final$IMDATE),main="IMDATE")
-# IMCENT - empty
-barplot(table(Inv_final$IMCENT),main="IMCENT")
-# IVPLTI - not significant
-barplot(table(Inv_final$IVPLTI),main="IVPLTI")
-# IVPLHI
-barplot(table(Inv_final$IVPLHI),main="IVPLHI")
-# SHPNUM - empty
-barplot(table(Inv_final$SHPNUM),main="SHPNUM")
-
-# Lots of NA's in IDISTM, replace with 0
 Inv_final$IDISTM[is.na(Inv_final$IDISTM)]<-0
-barplot(table(Inv_final$IDISTM),main="IDISTM")
-
-# IHLDWO - empty
-barplot(table(Inv_final$IHLDWO),main="IHLDWO")
-# IIGNUM - empty
-barplot(table(Inv_final$IIGNUM),main="IIGNUM")
-# ISDIM - empty
-barplot(table(Inv_final$ISDIM),main="ISDIM")
-# IVATCD - all NA's
-# IPLAN - empty
-barplot(table(Inv_final$IPLAN),main="IPLAN")
-# IVLRK1 - empty
-barplot(table(Inv_final$IVLRK1),main="IVLRK1")
-# IVLRK2 - empty
-barplot(table(Inv_final$IVLRK2),main="IVLRK2")
-# IVLRK3 - all NA's
-# IVLRK4 - all NA's
-# IRPLCN - empty
-barplot(table(Inv_final$IRPLCN),main="IRPLCN")
-# IRPLDT - empty
-barplot(table(Inv_final$IRPLDT),main="IRPLDT")
-# ISEASN
-barplot(table(Inv_final$ISEASN),main="ISEASN")
-# IDEADC
-barplot(table(Inv_final$IDEADC),main="IDEADC")
-# IDEADD - empty
-barplot(table(Inv_final$IDEADD),main="IDEADD")
-# INLRTL
-barplot(table(Inv_final$INLRTL),main="INLRTL")
-# IHANDL is all NA's
-# IATRB1 - empty
-barplot(table(Inv_final$IATRB1),main="IATRB1")
-# IATRB2 - empty
-barplot(table(Inv_final$IATRB2),main="IATRB2")
-# IATRB3
-barplot(table(Inv_final$IATRB3),main="IATRB3")
-# IATRB4 - empty
-barplot(table(Inv_final$IATRB4),main="IATRB4")
-# IATRB5 - all N's
-barplot(table(Inv_final$IATRB5),main="IATRB5")
-# IPRCCH
-barplot(table(Inv_final$IPRCCH),main="IPRCCH")
-# IPRCZN - all N's
-barplot(table(Inv_final$IPRCZN),main="IPRCZN")
-# IPRCST
-barplot(table(Inv_final$IPRCST),main="IPRCST")
-# IASNUM - empty
-barplot(table(Inv_final$IASNUM),main="IASNUM")
-# ICORGP
-barplot(table(Inv_final$ICORGP),main="ICORGP")
-# ILEAD
-barplot(table(Inv_final$ILEAD),main="ILEAD")
-# IHZCOD - all NA's
-# IFRACT - all NA's
-# IMCRDT - distributed
-barplot(table(Inv_final$IMCRDT),main="IMCRDT")
-# IMCRCN - all 1's
-barplot(table(Inv_final$IMCRCN),main="IMCRCN")
 ```
 
 #Check cross correlation of attributes to eliminate reduncancy
